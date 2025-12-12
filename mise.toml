@@ -1,0 +1,6 @@
+[tools]
+cmake = "3.30"
+python = "3.11"
+
+[env]
+_.python.venv = { path = ".venv", create = true }

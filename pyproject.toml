@@ -10,6 +10,11 @@ description = "A package wrapping the Marabou Neural Network Verification tool."
 readme = "README.md"
 license = { file = "COPYING" }
 requires-python = ">=3.8,<=3.12"
+dependencies = [
+  "numpy",
+  "torch==2.9",
+  "torchvision==0.24",
+]
 
 [project.optional-dependencies]
 test = [
