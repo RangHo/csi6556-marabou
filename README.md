@@ -1,6 +1,83 @@
-#  Marabou
-[![Marabou](https://github.com/NeuralNetworkVerification/Marabou/actions/workflows/ci.yml/badge.svg)](https://github.com/NeuralNetworkVerification/Marabou/actions/workflows/ci.yml)
-[![codecov.io](https://codecov.io/github/NeuralNetworkVerification/Marabou/coverage.svg?branch=master)](https://codecov.io/github/NeuralNetworkVerification/Marabou?branch=master)
+# Marabou (CSI6556)
+
+This repository contains a version of Marabou intended to be submitted for Yonsei University Neural Network Reliability Verification class.
+
+The original README follows after this custom README.
+
+The functionality of this utility has been verified in the following environment.
+Please refer to the *Installation* section for more information.
+
+| Dependency     | Version |
+|----------------|---------|
+| Python         | 3.11    |
+| CMake          | 3.30    |
+| PyTorch        | 2.9     |
+| PyTorch Vision | 0.24    |
+| TensorFlow     | 2.12    |
+| ONNX           | 1.16.1  |
+| ONNX Runtime   | 1.20.0  |
+| ONNX Script    | 0.5     |
+
+## Installation
+
+Before installing, make sure that you have a correct Python and CMake versions.
+[Mise](https://mise.jdx.dev/) can be used to automatically set up and install base dependencies.
+
+First, clone this repository.
+
+``` bash
+git clone https://github.com/RangHo/csi6556-marabou
+cd csi6556-marabou
+```
+
+From this step, assume that all commands start with current directory set as the project root.
+Install all depenencies using `pip`.
+
+``` bash
+python -m venv .venv # optional
+pip install .
+```
+
+In case the dependencies fail to build, the most likely cause is that your CPU has to be manually specified to build OpenBLAS.
+For example, if the build process complains about missing constants, visit the OpenBLAS directory and specify CPU architecture manually.
+
+``` bash
+cd tools/OpenBLAS-0.3.19/
+make clean
+make TARGET=<ARCHITECTURE>
+```
+
+Build the main Marabou executable.
+
+``` bash
+mkdir -p build
+cd build/
+cmake ../
+cmake --build ./
+```
+
+> [!TIP]
+> If all else fails, clean the virtual environment and just run `pip install maraboupy`.
+> If you decide to go this route, make sure to install other dependecies specified in `pyproject.toml` file.
+
+## Testing
+
+This repository is shipped with a testing script called `test`.
+This script is fully automated to test a matrix of settings and generate a summary in TSV format.
+Its behavior can be adjusted via setting the following environment variables:
+
+| Environment Variable | Description                                                                    |
+|----------------------|--------------------------------------------------------------------------------|
+| `MODEL`              | Path to the model to use. (e.g. `./resources/custom/fmnist_784x16x16x10.onnx`) |
+| `DATASET`            | Dataset to test against. One of `mnist`, `fmnist`, or `cifar10`.               |
+| `EPSILONS`           | Space-separated list of epsilons to apply. (e.g. `0.0 0.01 0.02`)              |
+| `INDICES`            | Space-separated list of indices to target. (e.g. `0 1 2`)                      |
+| `TARGET_LABELS`      | Space-separated list of labels to target (e.g. `0 1 2 3 4 5 6 7 8 9`)                                                                               |
+
+Upon running this script, there will be a directory called `test-results` will appear.
+In it, you will find the TSV summary document and individual outputs from Marabou.
+
+#  Original Marabou README
 
 Deep neural networks are proliferating in many applications. Consequently, 
 there is a pressing need for tools and techniques for network analysis and 
