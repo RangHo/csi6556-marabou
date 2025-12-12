@@ -1,0 +1,110 @@
+#!/bin/sh
+
+set -eu
+
+# Repository root.
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+
+# Required binaries and files.
+PYTHON=${PYTHON:-python3}
+RUN_MARABOU=${RUN_MARABOU:-"$ROOT/resources/runMarabou.py"}
+MODEL=${MODEL:-"$ROOT/resources/custom/fmnist_784x16x16x10.onnx"}
+DATASET=${DATASET:-fmnist}
+
+# Marabou binary and its related settings
+MARABOU_BIN=${MARABOU_BIN:-"$ROOT/build/Marabou"}
+MARABOU_ARGS=${MARABOU_ARGS:-}
+
+# Testing matrix.
+EPSILONS=${EPSILONS:-"0.0 0.01 0.02"}
+INDICES=${INDICES:-"0 1 2"}
+TARGET_LABELS=${TARGET_LABELS:-"0 1 2 3 4 5 6 7 8 9"}
+
+# Directory to save test results.
+OUTDIR=${OUTDIR:-"$ROOT/test-results"}
+mkdir -p "$OUTDIR"
+
+# Sanity checks.
+if [ ! -f "$MODEL" ]; then
+  echo "ERROR: model not found: $MODEL" >&2
+  exit 2
+fi
+if [ ! -f "$RUN_MARABOU" ]; then
+  echo "ERROR: runMarabou.py not found: $RUN_MARABOU" >&2
+  exit 2
+fi
+
+# Only pass --marabou-binary if it exists and is executable; otherwise let runMarabou.py default.
+MARABOU_BIN_ARGS=""
+if [ -x "$MARABOU_BIN" ]; then
+  MARABOU_BIN_ARGS="--marabou-binary $MARABOU_BIN"
+else
+  echo "WARN: Marabou binary not executable at: $MARABOU_BIN" >&2
+  echo "      Falling back to runMarabou.py default --marabou-binary" >&2
+fi
+
+# Set up summary files.
+ts=$(date +%Y%m%d-%H%M%S)
+SUMMARY="$OUTDIR/summary-$ts.tsv"
+echo "epsilon	index	target_label	result	seconds	log_file" > "$SUMMARY"
+
+run_one() {
+  eps=$1 # epsilon
+  idx=$2 # index
+  tgt=$3 # target label
+
+  eps_tag=$(printf "%s" "$eps" | tr '.' 'p' | tr '-' 'm')
+  run_id="idx${idx}_eps${eps_tag}_t${tgt}"
+  logfile="$OUTDIR/$run_id.txt"
+
+  start=$(date +%s)
+
+  set +e
+  $PYTHON "$RUN_MARABOU" "$MODEL" \
+    --dataset "$DATASET" \
+    --epsilon "$eps" \
+    --target-label "$tgt" \
+    --index "$idx" \
+    $MARABOU_BIN_ARGS \
+    $MARABOU_ARGS \
+    >"$logfile" 2>&1
+  code=$?
+  set -e
+
+  end=$(date +%s)
+  dur=$((end - start))
+
+  result="unknown"
+  if grep -iq "unsat" "$logfile"; then
+    result="unsat"
+  elif grep -iq "sat" "$logfile"; then
+    result="sat"
+  fi
+
+  if [ "$code" -ne 0 ]; then
+    result="error($code)"
+  fi
+
+  echo "$eps	$idx	$tgt	$result	$dur	$logfile" >> "$SUMMARY"
+  echo "$run_id -> $result (${dur}s)"
+}
+
+echo "Model:    $MODEL"
+echo "Dataset:  $DATASET"
+echo "Eps:      $EPSILONS"
+echo "Indices:  $INDICES"
+echo "Targets:  $TARGET_LABELS"
+[ -n "$MARABOU_ARGS" ] && echo "Marabou args: $MARABOU_ARGS"
+echo
+
+for idx in $INDICES; do
+  for eps in $EPSILONS; do
+    for tgt in $TARGET_LABELS; do
+      run_one "$eps" "$idx" "$tgt"
+    done
+  done
+done
+
+echo
+echo "Done."
+echo "Summary: $SUMMARY"
