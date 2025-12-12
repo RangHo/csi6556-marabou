@@ -132,7 +132,9 @@ def encode_fmnist_linf(network, index, epsilon, target_label):
         outputVars = network.outputVars[0].flatten()
         for i in range(10):
             if i != target_label:
-                network.addInequality([outputVars[i], outputVars[target_label]], [1, -1], 0)
+                network.addInequality(
+                    [outputVars[i], outputVars[target_label]], [1, -1], 0
+                )
     return
 
 
