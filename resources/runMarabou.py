@@ -78,6 +78,9 @@ def createQuery(args):
     if args.dataset == "mnist":
         encode_mnist_linf(network, args.index, args.epsilon, args.target_label)
         return network.getInputQuery(), network
+    elif args.dataset == "fmnist":
+        encode_fmnist_linf(network, args.index, args.epsilon, args.target_label)
+        return network.getInputQuery(), network
     elif args.dataset == "cifar10":
         encode_cifar10_linf(network, args.index, args.epsilon, args.target_label)
         return network.getInputQuery(), network
@@ -112,7 +115,25 @@ def encode_mnist_linf(network, index, epsilon, target_label):
 
 
 def encode_fmnist_linf(network, index, epsilon, target_label):
-    pass
+    from tensorflow.keras.datasets import fashion_mnist
+
+    (X_train, Y_train), (X_test, Y_test) = fashion_mnist.load_data()
+    point = np.array(X_test[index]).flatten() / 255.0
+    print("correct label: {}".format(Y_test[index]))
+
+    inVars = np.array(network.inputVars).flatten()
+    for i, v in enumerate(inVars):
+        network.setLowerBound(v, max(0, point[i] - epsilon))
+        network.setUpperBound(v, min(1, point[i] + epsilon))
+
+    if target_label == -1:
+        print("No output constraint!")
+    else:
+        outputVars = network.outputVars[0].flatten()
+        for i in range(10):
+            if i != target_label:
+                network.addInequality([outputVars[i], outputVars[target_label]], [1, -1], 0)
+    return
 
 
 def encode_cifar10_linf(network, index, epsilon, target_label):
@@ -158,7 +179,7 @@ def encode_cifar10_linf(network, index, epsilon, target_label):
 def arguments():
     ################################ Arguments parsing ##############################
     parser = argparse.ArgumentParser(
-        description="Script to run some canonical benchmarks with Marabou (e.g., ACAS benchmarks, l-inf robustness checks on mnist/cifar10)."
+        description="Script to run some canonical benchmarks with Marabou (e.g., ACAS benchmarks, l-inf robustness checks on mnist/fashion-mnist/cifar10)."
     )
     # benchmark
     parser.add_argument(
@@ -175,7 +196,7 @@ def arguments():
         "-q", "--input-query", type=str, default=None, help="The input query file name"
     )
     parser.add_argument(
-        "--dataset", type=str, default=None, help="the dataset (mnist,cifar10)"
+        "--dataset", type=str, default=None, help="the dataset (mnist,fmnist,cifar10)"
     )
     parser.add_argument(
         "-e",
