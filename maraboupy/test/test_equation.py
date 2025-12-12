@@ -1,18 +1,20 @@
 # Supress warnings caused by tensorflow
 import warnings
-warnings.filterwarnings('ignore', category = DeprecationWarning)
-warnings.filterwarnings('ignore', category = PendingDeprecationWarning)
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 
 from maraboupy import Marabou
 import numpy as np
 import os
 
 # Global settings
-OPT = Marabou.createOptions(verbosity = 0)     # Turn off printing
-TOL = 1e-8                                     # Set tolerance for equality constraints
-NETWORK_FILE = "../../resources/onnx/fc1.onnx" # File for test network
-np.random.seed(123)                            # Seed random numbers for repeatability
-NUM_RAND = 1                                   # Default number of random test points per example
+OPT = Marabou.createOptions(verbosity=0)  # Turn off printing
+TOL = 1e-8  # Set tolerance for equality constraints
+NETWORK_FILE = "../../resources/onnx/fc1.onnx"  # File for test network
+np.random.seed(123)  # Seed random numbers for repeatability
+NUM_RAND = 1  # Default number of random test points per example
+
 
 def test_equality_output():
     """
@@ -29,11 +31,12 @@ def test_equality_output():
         network.addEquality([outputVar], [1.0], outputValue)
 
         # Call to Marabou solver
-        exitCode, vals, _ = network.solve(options = OPT, verbose = False)
+        exitCode, vals, _ = network.solve(options=OPT, verbose=False)
         assert np.abs(vals[outputVar] - outputValue) < TOL
 
         # Remove inequality constraint, so that a new one can be applied in the next iteration
         network.equList = network.equList[:-1]
+
 
 def test_equality_input():
     """
@@ -45,7 +48,7 @@ def test_equality_input():
 
     # Input equality constraint
     inputVars = network.inputVars[0][0]
-    weights = np.ones(inputVars.shape)/inputVars.size
+    weights = np.ones(inputVars.shape) / inputVars.size
     averageInputValue = 5.0
     network.addEquality(inputVars, weights, averageInputValue)
 
@@ -56,9 +59,15 @@ def test_equality_input():
     network.setLowerBound(outputVar, minOutputValue)
 
     # Call to Marabou solver
-    exitCode, vals, _ = network.solve(options = OPT, verbose = False)
-    assert np.abs(np.dot([vals[inVar] for inVar in inputVars], weights) - averageInputValue) < TOL
+    exitCode, vals, _ = network.solve(options=OPT, verbose=False)
+    assert (
+        np.abs(
+            np.dot([vals[inVar] for inVar in inputVars], weights) - averageInputValue
+        )
+        < TOL
+    )
     assert vals[outputVar] >= minOutputValue
+
 
 def test_inequality_output():
     """
@@ -76,11 +85,12 @@ def test_inequality_output():
         network.addInequality(outputVars, weights, outputValue)
 
         # Call to Marabou solver
-        exitCode, vals, _ = network.solve(options = OPT, verbose = False)
+        exitCode, vals, _ = network.solve(options=OPT, verbose=False)
         assert np.dot([vals[outVar] for outVar in outputVars], weights) <= outputValue
 
         # Remove inequality constraint, so that a new one can be applied in the next iteration
         network.equList = network.equList[:-1]
+
 
 def test_inequality_input():
     """
@@ -92,7 +102,7 @@ def test_inequality_input():
 
     # Input inequality constraint
     inputVars = network.inputVars[0][0]
-    weights = np.ones(inputVars.shape)/inputVars.size
+    weights = np.ones(inputVars.shape) / inputVars.size
     averageInputValue = -5.0
     network.addInequality(inputVars, weights, averageInputValue)
 
@@ -103,9 +113,10 @@ def test_inequality_input():
     network.setLowerBound(outputVar, minOutputValue)
 
     # Call to Marabou solver
-    exitCode, vals, _ = network.solve(options = OPT, verbose = False)
+    exitCode, vals, _ = network.solve(options=OPT, verbose=False)
     assert np.dot([vals[inVar] for inVar in inputVars], weights) <= averageInputValue
     assert vals[outputVar] >= minOutputValue
+
 
 def load_network():
     """
@@ -121,9 +132,9 @@ def load_network():
     inputVars = network.inputVars[0][0]
 
     # Set input bounds
-    network.setLowerBound(inputVars[0],-10.0)
+    network.setLowerBound(inputVars[0], -10.0)
     network.setUpperBound(inputVars[0], 10.0)
-    network.setLowerBound(inputVars[1],-10.0)
+    network.setLowerBound(inputVars[1], -10.0)
     network.setUpperBound(inputVars[1], 10.0)
 
     return network

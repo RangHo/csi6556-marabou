@@ -1,11 +1,13 @@
 # Supress warnings caused by tensorflow
 import warnings
-warnings.filterwarnings('ignore', category = DeprecationWarning)
-warnings.filterwarnings('ignore', category = PendingDeprecationWarning)
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 
 import pytest
 from maraboupy import MarabouCore
 from maraboupy.Marabou import createOptions
+
 
 def test_statistics():
     """
@@ -16,8 +18,19 @@ def test_statistics():
     ipq.setLowerBound(0, -1)
     ipq.setUpperBound(0, 1)
 
-    opt = createOptions(verbosity = 0) # Turn off printing
+    opt = createOptions(verbosity=0)  # Turn off printing
     exitCode, vals, stats = MarabouCore.solve(ipq, opt, "")
-    assert(stats.getUnsignedAttribute(MarabouCore.StatisticsUnsignedAttribute.NUM_SPLITS) == 0)
-    assert(stats.getLongAttribute(MarabouCore.StatisticsLongAttribute.NUM_MAIN_LOOP_ITERATIONS) == 2)
-    assert(stats.getDoubleAttribute(MarabouCore.StatisticsDoubleAttribute.MAX_DEGRADATION) == 0)
+    assert (
+        stats.getUnsignedAttribute(MarabouCore.StatisticsUnsignedAttribute.NUM_SPLITS)
+        == 0
+    )
+    assert (
+        stats.getLongAttribute(
+            MarabouCore.StatisticsLongAttribute.NUM_MAIN_LOOP_ITERATIONS
+        )
+        == 2
+    )
+    assert (
+        stats.getDoubleAttribute(MarabouCore.StatisticsDoubleAttribute.MAX_DEGRADATION)
+        == 0
+    )

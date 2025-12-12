@@ -1,4 +1,4 @@
-'''
+"""
 MarabouCore Example
 ====================
 
@@ -6,13 +6,13 @@ Top contributors (to current version):
   - Christopher Lazarus
   - Kyle Julian
   - Andrew Wu
-  
+
 This file is part of the Marabou project.
 Copyright (c) 2017-2024 by the authors listed in the file AUTHORS
 in the top-level source directory) and their institutional affiliations.
 All rights reserved. See the file COPYING in the top-level source
 directory for licensing information.
-'''
+"""
 
 from maraboupy import MarabouCore
 from maraboupy.Marabou import createOptions
@@ -100,7 +100,7 @@ inputQuery.addEquation(equation3)
 MarabouCore.addReluConstraint(inputQuery, 1, 2)
 MarabouCore.addReluConstraint(inputQuery, 3, 4)
 
-# %% 
+# %%
 # Run Marabou to solve the query
 # This should return "sat"
 options = createOptions()

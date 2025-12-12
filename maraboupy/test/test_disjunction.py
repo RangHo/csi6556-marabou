@@ -1,7 +1,8 @@
 # Supress warnings caused by tensorflow
 import warnings
-warnings.filterwarnings('ignore', category = DeprecationWarning)
-warnings.filterwarnings('ignore', category = PendingDeprecationWarning)
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 
 from maraboupy import Marabou
 from maraboupy import MarabouCore
@@ -9,8 +10,9 @@ import numpy as np
 import os
 
 # Global settings
-OPT = Marabou.createOptions(verbosity = 0) # Turn off printing
-TOL = 1e-4                                 # Set tolerance for checking Marabou evaluations
+OPT = Marabou.createOptions(verbosity=0)  # Turn off printing
+TOL = 1e-4  # Set tolerance for checking Marabou evaluations
+
 
 # Test adapted from https://github.com/NeuralNetworkVerification/Marabou/issues/607
 def test_unit_equation1():
@@ -20,11 +22,11 @@ def test_unit_equation1():
     inputQuery = MarabouCore.InputQuery()
     inputQuery.setNumberOfVariables(1)
 
-    inputQuery.setLowerBound(0,-1)
-    inputQuery.setUpperBound(0,1)
+    inputQuery.setLowerBound(0, -1)
+    inputQuery.setUpperBound(0, 1)
 
     eq0 = MarabouCore.Equation()
-    eq0.addAddend(1,0)
+    eq0.addAddend(1, 0)
     eq0.setScalar(1)
     inputQuery.addEquation(eq0)
 
@@ -35,7 +37,8 @@ def test_unit_equation1():
     MarabouCore.addDisjunctionConstraint(inputQuery, [[eq1]])
 
     r, _, _ = MarabouCore.solve(inputQuery, OPT, "")
-    assert(r == "unsat")
+    assert r == "unsat"
+
 
 def test_unit_equation2():
     # x0 = 1
@@ -44,11 +47,11 @@ def test_unit_equation2():
     inputQuery = MarabouCore.InputQuery()
     inputQuery.setNumberOfVariables(1)
 
-    inputQuery.setLowerBound(0,-1)
-    inputQuery.setUpperBound(0,1)
+    inputQuery.setLowerBound(0, -1)
+    inputQuery.setUpperBound(0, 1)
 
     eq0 = MarabouCore.Equation()
-    eq0.addAddend(1,0)
+    eq0.addAddend(1, 0)
     eq0.setScalar(1)
     inputQuery.addEquation(eq0)
 
@@ -59,7 +62,8 @@ def test_unit_equation2():
     MarabouCore.addDisjunctionConstraint(inputQuery, [[eq1]])
 
     r, _, _ = MarabouCore.solve(inputQuery, OPT, "")
-    assert(r == "unsat")
+    assert r == "unsat"
+
 
 def test_unit_equation3():
     # x0 = 1
@@ -67,11 +71,11 @@ def test_unit_equation3():
     inputQuery = MarabouCore.InputQuery()
     inputQuery.setNumberOfVariables(1)
 
-    inputQuery.setLowerBound(0,-1)
-    inputQuery.setUpperBound(0,1)
+    inputQuery.setLowerBound(0, -1)
+    inputQuery.setUpperBound(0, 1)
 
     eq0 = MarabouCore.Equation()
-    eq0.addAddend(1,0)
+    eq0.addAddend(1, 0)
     eq0.setScalar(1)
     inputQuery.addEquation(eq0)
 
@@ -82,8 +86,9 @@ def test_unit_equation3():
     MarabouCore.addDisjunctionConstraint(inputQuery, [[eq1]])
 
     r, vals, _ = MarabouCore.solve(inputQuery, OPT, "")
-    assert(r == "sat")
-    assert(vals[0] == 1)
+    assert r == "sat"
+    assert vals[0] == 1
+
 
 def test_unit_equation4():
     # x0 = 1
@@ -91,11 +96,11 @@ def test_unit_equation4():
     inputQuery = MarabouCore.InputQuery()
     inputQuery.setNumberOfVariables(1)
 
-    inputQuery.setLowerBound(0,-1)
-    inputQuery.setUpperBound(0,1)
+    inputQuery.setLowerBound(0, -1)
+    inputQuery.setUpperBound(0, 1)
 
     eq0 = MarabouCore.Equation()
-    eq0.addAddend(1,0)
+    eq0.addAddend(1, 0)
     eq0.setScalar(1)
     inputQuery.addEquation(eq0)
 
@@ -106,5 +111,5 @@ def test_unit_equation4():
     MarabouCore.addDisjunctionConstraint(inputQuery, [[eq1]])
 
     r, vals, _ = MarabouCore.solve(inputQuery, OPT, "")
-    assert(r == "sat")
-    assert(vals[0] == 1)
+    assert r == "sat"
+    assert vals[0] == 1

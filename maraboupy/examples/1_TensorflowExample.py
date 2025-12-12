@@ -1,17 +1,17 @@
-'''
+"""
 Tensorflow Example
 ====================
 
 Top contributors (to current version):
   - Christopher Lazarus
   - Kyle Julian
-  
+
 This file is part of the Marabou project.
 Copyright (c) 2017-2024 by the authors listed in the file AUTHORS
 in the top-level source directory) and their institutional affiliations.
 All rights reserved. See the file COPYING in the top-level source
 directory for licensing information.
-'''
+"""
 
 from maraboupy import Marabou
 import numpy as np
@@ -25,9 +25,11 @@ network = Marabou.read_tf(filename)
 # %%
 # Or, you can specify the operation names of the input and output operations.
 # The default chooses the placeholder operations as input and the last operation as output
-inputNames = ['Placeholder']
-outputNames = ['y_out']
-network = Marabou.read_tf(filename = filename, inputNames = inputNames, outputNames = outputNames)
+inputNames = ["Placeholder"]
+outputNames = ["y_out"]
+network = Marabou.read_tf(
+    filename=filename, inputNames=inputNames, outputNames=outputNames
+)
 
 # %%
 # Get the input and output variable numbers; [0] since first dimension is batch size
@@ -36,9 +38,9 @@ outputVars = network.outputVars[0]
 
 # %%
 # Set input bounds on both input variables
-network.setLowerBound(inputVars[0],-10.0)
+network.setLowerBound(inputVars[0], -10.0)
 network.setUpperBound(inputVars[0], 10.0)
-network.setLowerBound(inputVars[1],-10.0)
+network.setLowerBound(inputVars[1], -10.0)
 network.setUpperBound(inputVars[1], 10.0)
 
 # %%

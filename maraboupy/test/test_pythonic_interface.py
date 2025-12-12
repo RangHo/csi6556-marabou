@@ -34,7 +34,7 @@ def test_pythonic_interface():
         network_b.addInequality([i], [5], 8)
         network_a.addConstraint(v * 6 >= -10)
         network_b.addInequality([i], [-6], 10)
-        network_a.addConstraint(- v * 10 >= 8)
+        network_a.addConstraint(-v * 10 >= 8)
         network_b.addInequality([i], [10], -8)
         network_a.addConstraint(v * 6 + 10 == 12)
         network_b.addEquality([i], [6], 12 - 10)
@@ -67,8 +67,9 @@ def test_pythonic_interface():
         network_b.addInequality([i, i + 1, i + 2], [3, 2, -4], 50)
         network_a.addConstraint(v * 4 - w <= 6 * u)
         network_b.addInequality([i, i + 2, i + 1], [4, -1, -6], 0)
-        with pytest.raises(NotImplementedError,
-                           match="Only linear constraints are supported."):
+        with pytest.raises(
+            NotImplementedError, match="Only linear constraints are supported."
+        ):
             network_a.addConstraint(v * u >= w)
     assert network_a.isEqualTo(network_b)
 

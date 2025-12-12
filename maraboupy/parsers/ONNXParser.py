@@ -1,4 +1,4 @@
-'''
+"""
 Top contributors (to current version):
     - Kyle Julian
     - Haoze Wu
@@ -13,7 +13,8 @@ All rights reserved. See the file COPYING in the top-level source
 directory for licensing information.
 
 MarabouNetworkONNX represents neural networks with piecewise linear constraints derived from the ONNX format
-'''
+"""
+
 from typing import List
 import numpy as np
 from onnx import numpy_helper
@@ -25,6 +26,7 @@ import itertools
 from copy import copy
 from onnx.reference.ops._op_list import Split_18, Unsqueeze_1
 
+
 class ONNXParser:
     """
     Class for parsing ONNX files.
@@ -32,7 +34,9 @@ class ONNXParser:
     """
 
     @staticmethod
-    def parse(query:InputQueryBuilder, graph, inputNames:List[str], outputNames:List[str]):
+    def parse(
+        query: InputQueryBuilder, graph, inputNames: List[str], outputNames: List[str]
+    ):
         """
         Parses the provided ONNX graph into constraints which are stored in the query argument.
 
@@ -48,8 +52,7 @@ class ONNXParser:
         parser = ONNXParser(query, graph, inputNames, outputNames)
         parser.parseGraph()
 
-
-    def __init__(self, query:InputQueryBuilder, graph, inputNames, outputNames):
+    def __init__(self, query: InputQueryBuilder, graph, inputNames, outputNames):
         """
         Should not be called directly. Use `ONNXParser.parse` instead.
 
@@ -65,7 +68,6 @@ class ONNXParser:
         self.varMap = dict()
         self.constantMap = dict()
         self.shapeMap = dict()
-
 
     def parseGraph(self):
         """Read an ONNX file and create a MarabouNetworkONNX object
@@ -83,8 +85,13 @@ class ONNXParser:
 
         for outputName in self.outputNames:
             if outputName in self.constantMap:
-                raise RuntimeError("Output variable %s is a constant, not the output of equations!" % outputName)
-        self.query.outputVars.extend([self.varMap[outputName] for outputName in self.outputNames])
+                raise RuntimeError(
+                    "Output variable %s is a constant, not the output of equations!"
+                    % outputName
+                )
+        self.query.outputVars.extend(
+            [self.varMap[outputName] for outputName in self.outputNames]
+        )
 
     def processGraph(self):
         """Processes the ONNX graph to produce Marabou equations
@@ -93,7 +100,12 @@ class ONNXParser:
         """
         # Add shapes for the graph's inputs
         for node in self.graph.input:
-            self.shapeMap[node.name] = list([dim.dim_value if dim.dim_value > 0 else 1 for dim in node.type.tensor_type.shape.dim])
+            self.shapeMap[node.name] = list(
+                [
+                    dim.dim_value if dim.dim_value > 0 else 1
+                    for dim in node.type.tensor_type.shape.dim
+                ]
+            )
 
             # If we find one of the specified inputs, create new variables
             if node.name in self.inputNames:
@@ -138,7 +150,11 @@ class ONNXParser:
 
         # By this point, all input variables need to have been found
         if self.foundnInputFlags != len(self.inputNames):
-            err_msg = "These input variables could not be found: %s"%(", ".join([inVar for inVar in self.inputNames if inVar not in self.varMap]))
+            err_msg = "These input variables could not be found: %s" % (
+                ", ".join(
+                    [inVar for inVar in self.inputNames if inVar not in self.varMap]
+                )
+            )
             raise RuntimeError(err_msg)
 
         # Compute node's shape and create Marabou equations as needed
@@ -159,58 +175,60 @@ class ONNXParser:
         :meta private:
         """
         node = self.getNode(nodeName)
-        if node.op_type == 'Constant':
+        if node.op_type == "Constant":
             self.constant(node)
-        elif node.op_type == 'Identity':
+        elif node.op_type == "Identity":
             self.identity(node)
-        elif node.op_type == 'Dropout':
+        elif node.op_type == "Dropout":
             self.dropout(node)
-        elif node.op_type == 'Cast':
+        elif node.op_type == "Cast":
             self.cast(node)
-        elif node.op_type == 'Reshape':
+        elif node.op_type == "Reshape":
             self.reshape(node)
-        elif node.op_type == 'Flatten':
+        elif node.op_type == "Flatten":
             self.flatten(node)
         elif node.op_type == "Transpose":
             self.transpose(node)
-        elif node.op_type == 'Unsqueeze':
+        elif node.op_type == "Unsqueeze":
             self.unsqueeze(node)
-        elif node.op_type == 'Squeeze':
+        elif node.op_type == "Squeeze":
             self.squeeze(node)
         elif node.op_type == "BatchNormalization":
             self.batchNorm(node, makeEquations)
-        elif node.op_type == 'Concat':
+        elif node.op_type == "Concat":
             self.concatEquations(node)
         elif node.op_type == "MaxPool":
             self.maxpoolEquations(node, makeEquations)
         elif node.op_type == "Conv":
             self.convEquations(node, makeEquations)
-        elif node.op_type == 'Gemm':
+        elif node.op_type == "Gemm":
             self.gemmEquations(node, makeEquations)
-        elif node.op_type == 'MatMul':
+        elif node.op_type == "MatMul":
             self.matMulEquations(node, makeEquations)
-        elif node.op_type == 'Mul':
+        elif node.op_type == "Mul":
             self.mulEquations(node, makeEquations)
-        elif node.op_type == 'Add':
+        elif node.op_type == "Add":
             self.addEquations(node, makeEquations)
-        elif node.op_type == 'Relu':
+        elif node.op_type == "Relu":
             self.reluEquations(node, makeEquations)
-        elif node.op_type == 'Sigmoid':
+        elif node.op_type == "Sigmoid":
             self.sigmoidEquations(node, makeEquations)
-        elif node.op_type == 'Split':
+        elif node.op_type == "Split":
             self.splitEquations(node, nodeName, makeEquations)
-        elif node.op_type == 'Resize':
+        elif node.op_type == "Resize":
             self.resizeEquations(node, makeEquations)
-        elif node.op_type == 'Tanh':
+        elif node.op_type == "Tanh":
             self.tanhEquations(node, makeEquations)
-        elif node.op_type == 'LeakyRelu':
+        elif node.op_type == "LeakyRelu":
             self.leakyReluEquations(node, makeEquations)
-        elif node.op_type == 'Softmax':
+        elif node.op_type == "Softmax":
             self.softmaxEquations(node, makeEquations)
-        elif node.op_type == 'Sub':
+        elif node.op_type == "Sub":
             self.subEquations(node, makeEquations)
         else:
-            raise NotImplementedError("Operation {} not implemented".format(node.op_type))
+            raise NotImplementedError(
+                "Operation {} not implemented".format(node.op_type)
+            )
 
     def getNode(self, nodeName):
         """Find the node in the graph corresponding to the given name
@@ -243,7 +261,9 @@ class ONNXParser:
         size = np.prod(shape)
         v = np.array([self.query.getNewVariable() for _ in range(size)]).reshape(shape)
         self.varMap[nodeName] = v
-        assert all([np.equal(np.mod(i, 1), 0) for i in v.reshape(-1)]) # check if integers
+        assert all(
+            [np.equal(np.mod(i, 1), 0) for i in v.reshape(-1)]
+        )  # check if integers
         return v
 
     def getInputNodes(self, nodeName):
@@ -263,7 +283,11 @@ class ONNXParser:
             if len([nde for nde in self.graph.node if inp in nde.output]):
                 inNodes += [inp]
             elif len([nde for nde in self.graph.initializer if nde.name == inp]):
-                self.constantMap[inp] = [numpy_helper.to_array(init) for init in self.graph.initializer if init.name == inp][0]
+                self.constantMap[inp] = [
+                    numpy_helper.to_array(init)
+                    for init in self.graph.initializer
+                    if init.name == inp
+                ][0]
         return inNodes
 
     def constant(self, node):
@@ -277,7 +301,9 @@ class ONNXParser:
         nodeName = node.output[0]
         for attr in node.attribute:
             if attr.name == "value":
-                self.constantMap[nodeName] = numpy_helper.to_array(get_attribute_value(attr))
+                self.constantMap[nodeName] = numpy_helper.to_array(
+                    get_attribute_value(attr)
+                )
                 self.shapeMap[nodeName] = self.constantMap[nodeName].shape
                 return
         raise RuntimeError("Could not find value of tensor constant")
@@ -334,27 +360,39 @@ class ONNXParser:
         # Cast input array to correct type, and throw error if type is unknown
         if inputName in self.constantMap:
             if to == TensorProto.FLOAT16:
-                self.constantMap[nodeName] = self.constantMap[inputName].astype('float16')
+                self.constantMap[nodeName] = self.constantMap[inputName].astype(
+                    "float16"
+                )
             elif to == TensorProto.FLOAT:
-                self.constantMap[nodeName] = self.constantMap[inputName].astype('float32')
+                self.constantMap[nodeName] = self.constantMap[inputName].astype(
+                    "float32"
+                )
             elif to == TensorProto.DOUBLE:
-                self.constantMap[nodeName] = self.constantMap[inputName].astype('double')
+                self.constantMap[nodeName] = self.constantMap[inputName].astype(
+                    "double"
+                )
             elif to == TensorProto.UINT8:
-                self.constantMap[nodeName] = self.constantMap[inputName].astype('uint8')
+                self.constantMap[nodeName] = self.constantMap[inputName].astype("uint8")
             elif to == TensorProto.UINT16:
-                self.constantMap[nodeName] = self.constantMap[inputName].astype('uint16')
+                self.constantMap[nodeName] = self.constantMap[inputName].astype(
+                    "uint16"
+                )
             elif to == TensorProto.UINT32:
-                self.constantMap[nodeName] = self.constantMap[inputName].astype('uint32')
+                self.constantMap[nodeName] = self.constantMap[inputName].astype(
+                    "uint32"
+                )
             elif to == TensorProto.UINT64:
-                self.constantMap[nodeName] = self.constantMap[inputName].astype('uint64')
+                self.constantMap[nodeName] = self.constantMap[inputName].astype(
+                    "uint64"
+                )
             elif to == TensorProto.INT8:
-                self.constantMap[nodeName] = self.constantMap[inputName].astype('int8')
+                self.constantMap[nodeName] = self.constantMap[inputName].astype("int8")
             elif to == TensorProto.INT16:
-                self.constantMap[nodeName] = self.constantMap[inputName].astype('int16')
+                self.constantMap[nodeName] = self.constantMap[inputName].astype("int16")
             elif to == TensorProto.INT32:
-                self.constantMap[nodeName] = self.constantMap[inputName].astype('int32')
+                self.constantMap[nodeName] = self.constantMap[inputName].astype("int32")
             elif to == TensorProto.INT64:
-                self.constantMap[nodeName] = self.constantMap[inputName].astype('int64')
+                self.constantMap[nodeName] = self.constantMap[inputName].astype("int64")
             else:
                 err_msg = "Unknown type for casting: %d\n" % to
                 err_msg += "Check here for ONNX TensorProto: https://github.com/onnx/onnx/blob/master/onnx/onnx.proto"
@@ -377,11 +415,15 @@ class ONNXParser:
 
         # Assume first input is array to be reshaped, second input is the new shape array
         reshapeVals = self.constantMap[inputName2]
-        self.shapeMap[nodeName] = list(np.zeros(self.shapeMap[inputName1]).reshape(reshapeVals).shape)
+        self.shapeMap[nodeName] = list(
+            np.zeros(self.shapeMap[inputName1]).reshape(reshapeVals).shape
+        )
         if inputName1 in self.varMap:
             self.varMap[nodeName] = copy(self.varMap[inputName1]).reshape(reshapeVals)
         elif inputName1 in self.constantMap:
-            self.constantMap[nodeName] = self.constantMap[inputName1].reshape(reshapeVals)
+            self.constantMap[nodeName] = self.constantMap[inputName1].reshape(
+                reshapeVals
+            )
 
     def flatten(self, node):
         """Function representing flatten
@@ -434,9 +476,9 @@ class ONNXParser:
             raise RuntimeError("Permutation indices not specified by attibute 'perm'")
         self.shapeMap[nodeName] = [self.shapeMap[inputName][p] for p in perm]
         if inputName in self.varMap:
-            self.varMap[nodeName] = \
-            np.transpose(self.varMap[node.input[0]].reshape(self.shapeMap[node.input[0]]),
-                         perm)
+            self.varMap[nodeName] = np.transpose(
+                self.varMap[node.input[0]].reshape(self.shapeMap[node.input[0]]), perm
+            )
         elif inputName in self.constantMap:
             self.constantMap[nodeName] = np.transpose(self.constantMap[inputName], perm)
 
@@ -461,7 +503,6 @@ class ONNXParser:
             self.shapeMap[nodeName] = output_data.shape
             self.constantMap[nodeName] = output_data
 
-
     def squeeze(self, node):
         """Function representing squeeze
 
@@ -480,7 +521,7 @@ class ONNXParser:
             vars = copy(self.varMap[inputName])
             for i in range(len(axis)):
                 vars = np.squeeze(vars, axis_[i])
-                for j in range(len(axis))[i+1:]:
+                for j in range(len(axis))[i + 1 :]:
                     axis_[j] -= 1
             self.varMap[nodeName] = vars
             self.shapeMap[nodeName] = vars.shape
@@ -519,7 +560,7 @@ class ONNXParser:
         # Get variables
         inputVars = self.varMap[inputName].reshape(numChannels, -1)
         outputVars = self.makeNewVariables(nodeName).reshape(numChannels, -1)
-        assert(inputVars.shape == outputVars.shape)
+        assert inputVars.shape == outputVars.shape
 
         numInputs = inputVars.shape[1]
 
@@ -529,9 +570,15 @@ class ONNXParser:
                 # To know this computation,
                 # refer to https://github.com/onnx/onnx/blob/master/docs/Operators.md#batchnormalization.
                 e = MarabouUtils.Equation()
-                e.addAddend(1 / np.sqrt(input_variances[i] + epsilon) * scales[i], inputVars[i][j])
+                e.addAddend(
+                    1 / np.sqrt(input_variances[i] + epsilon) * scales[i],
+                    inputVars[i][j],
+                )
                 e.addAddend(-1, outputVars[i][j])
-                e.setScalar(input_means[i] / np.sqrt(input_variances[i] + epsilon) * scales[i] - biases[i])
+                e.setScalar(
+                    input_means[i] / np.sqrt(input_variances[i] + epsilon) * scales[i]
+                    - biases[i]
+                )
                 self.query.addEquation(e)
 
     def maxpoolEquations(self, node, makeEquations):
@@ -550,14 +597,18 @@ class ONNXParser:
         kernel_shape = [1, 1]
         strides = [1, 1]
         for attr in node.attribute:
-            if attr.name == 'kernel_shape':
+            if attr.name == "kernel_shape":
                 kernel_shape = get_attribute_value(attr)
-            elif attr.name == 'strides':
+            elif attr.name == "strides":
                 strides = get_attribute_value(attr)
 
         outputShape = [dim for dim in inputShape]
-        outputShape[2] = int(np.ceil((inputShape[2] - ((kernel_shape[0] - 1) + 1) + 1) / strides[0]))
-        outputShape[3] = int(np.ceil((inputShape[3] - ((kernel_shape[1] - 1) + 1) + 1) / strides[1]))
+        outputShape[2] = int(
+            np.ceil((inputShape[2] - ((kernel_shape[0] - 1) + 1) + 1) / strides[0])
+        )
+        outputShape[3] = int(
+            np.ceil((inputShape[3] - ((kernel_shape[1] - 1) + 1) + 1) / strides[1])
+        )
         self.shapeMap[nodeName] = outputShape
 
         if not makeEquations:
@@ -569,8 +620,10 @@ class ONNXParser:
             for j in range(outputShape[3]):
                 for k in range(outputShape[1]):
                     maxVars = set()
-                    for di in range(strides[0]*i, strides[0]*i + kernel_shape[0]):
-                        for dj in range(strides[1]*j, strides[1]*j + kernel_shape[1]):
+                    for di in range(strides[0] * i, strides[0] * i + kernel_shape[0]):
+                        for dj in range(
+                            strides[1] * j, strides[1] * j + kernel_shape[1]
+                        ):
                             if di < inputShape[2] and dj < inputShape[3]:
                                 maxVars.add(inVars[0][k][di][dj])
                     self.query.addMaxConstraint(maxVars, outVars[0][k][i][j])
@@ -589,7 +642,7 @@ class ONNXParser:
         # Extract attributes and define shape
         inputShape = self.shapeMap[node.input[0]]
         for attr in node.attribute:
-            if attr.name == 'axis':
+            if attr.name == "axis":
                 axis = get_attribute_value(attr)
 
         self.shapeMap[nodeName] = inputShape
@@ -601,9 +654,11 @@ class ONNXParser:
         outVars = self.makeNewVariables(nodeName)
 
         if len(inputShape) == 2 and inputShape[0] == 1:
-            self.query.addSoftmaxConstraint(list(np.array(inVars).flatten()), list(np.array(outVars).flatten()))
+            self.query.addSoftmaxConstraint(
+                list(np.array(inVars).flatten()), list(np.array(outVars).flatten())
+            )
         else:
-            axis = ( len(inputShape) + axis ) % len(inputShape)
+            axis = (len(inputShape) + axis) % len(inputShape)
             perm = []
             for i, s in enumerate(inputShape):
                 if i == axis:
@@ -631,9 +686,9 @@ class ONNXParser:
         strides = [1, 1]
         pads = [0, 0, 0, 0]
         for attr in node.attribute:
-            if attr.name == 'strides':
+            if attr.name == "strides":
                 strides = get_attribute_value(attr)
-            elif attr.name == 'pads':
+            elif attr.name == "pads":
                 pads = get_attribute_value(attr)
         pad_left, pad_bottom, pad_right, pad_top = pads
 
@@ -659,8 +714,12 @@ class ONNXParser:
         assert input_channels == filter_channels
 
         # Compute output shape
-        out_width = (input_width - filter_width + pad_left + pad_right) // strides[0] + 1
-        out_height = (input_height - filter_height + pad_bottom + pad_top) // strides[1] + 1
+        out_width = (input_width - filter_width + pad_left + pad_right) // strides[
+            0
+        ] + 1
+        out_height = (input_height - filter_height + pad_bottom + pad_top) // strides[
+            1
+        ] + 1
         out_channels = num_filters
         self.shapeMap[nodeName] = [shape0[0], out_channels, out_width, out_height]
 
@@ -675,7 +734,9 @@ class ONNXParser:
         # There is one equation for every output variable
         for i in range(out_width):
             for j in range(out_height):
-                for k in range(out_channels): # Out_channel corresponds to filter number
+                for k in range(
+                    out_channels
+                ):  # Out_channel corresponds to filter number
                     e = MarabouUtils.Equation()
 
                     # The equation convolves the filter with the specified input region
@@ -683,9 +744,14 @@ class ONNXParser:
                     for di in range(filter_width):
                         for dj in range(filter_height):
                             for dk in range(filter_channels):
-                                w_ind = int(strides[0]*i+di - pad_left)
-                                h_ind = int(strides[1]*j+dj - pad_bottom)
-                                if h_ind < input_height and h_ind >= 0 and w_ind < input_width and w_ind >= 0:
+                                w_ind = int(strides[0] * i + di - pad_left)
+                                h_ind = int(strides[1] * j + dj - pad_bottom)
+                                if (
+                                    h_ind < input_height
+                                    and h_ind >= 0
+                                    and w_ind < input_width
+                                    and w_ind >= 0
+                                ):
                                     var = inVars[0][dk][w_ind][h_ind]
                                     c = weights[k][dk][di][dj]
                                     e.addAddend(c, var)
@@ -722,13 +788,13 @@ class ONNXParser:
         transA = 0
         transB = 0
         for attr in node.attribute:
-            if attr.name == 'transA':
+            if attr.name == "transA":
                 transA = get_attribute_value(attr)
-            elif attr.name == 'transB':
+            elif attr.name == "transB":
                 transB = get_attribute_value(attr)
-            elif attr.name == 'alpha':
+            elif attr.name == "alpha":
                 alpha = get_attribute_value(attr)
-            elif attr.name == 'beta':
+            elif attr.name == "beta":
                 beta = get_attribute_value(attr)
 
         if transA:
@@ -765,16 +831,15 @@ class ONNXParser:
             for j in range(shape2[1]):
                 e = MarabouUtils.Equation()
                 for k in range(shape1[1]):
-                    e.addAddend(input2[k][j]*alpha, input1[i][k])
+                    e.addAddend(input2[k][j] * alpha, input1[i][k])
 
                 # Put output variable as the last addend last
                 e.addAddend(-1, outputVariables[i][j])
                 if inputName3:
-                    e.setScalar(-input3[i][j]*beta)
+                    e.setScalar(-input3[i][j] * beta)
                 else:
                     e.setScalar(0)
                 self.query.addEquation(e)
-
 
     def matMulEquations(self, node, makeEquations):
         """Function to generate equations corresponding to matrix multiplication
@@ -807,7 +872,8 @@ class ONNXParser:
         if not makeEquations:
             return
 
-        firstInputConstant = False; secondInputConstant = False
+        firstInputConstant = False
+        secondInputConstant = False
         if inputName1 in self.constantMap:
             input1 = self.constantMap[inputName1]
             firstInputConstant = True
@@ -825,7 +891,7 @@ class ONNXParser:
 
         # If both inputs are constant, than the output is constant as well, and we don't need new variables or equations
         if firstInputConstant and secondInputConstant:
-            self.constantMap[nodeName] = np.matmul(input1,input2)
+            self.constantMap[nodeName] = np.matmul(input1, input2)
             return
 
         # Create new variables
@@ -838,7 +904,7 @@ class ONNXParser:
             # Generate equations
             for i in range(shape1[0]):
                 # Differentiate between matrix-vector multiplication and matrix-matrix multiplication
-                if len(shape2)>1:
+                if len(shape2) > 1:
                     for j in range(shape2[1]):
                         e = MarabouUtils.Equation()
                         for k in range(shape1[1]):
@@ -880,7 +946,7 @@ class ONNXParser:
                     e.setScalar(0.0)
                     self.query.addEquation(e)
         elif len(shape2) == 3:
-            assert(shape1[0] == shape2[0])
+            assert shape1[0] == shape2[0]
             for l in range(shape1[0]):
                 for i in range(shape1[1]):
                     for j in range(shape2[2]):
@@ -982,7 +1048,9 @@ class ONNXParser:
         inputVars = self.varMap[inputName]
         inputShape = inputVars.shape
         if inputVars.ndim != 4:
-            raise NotImplementedError("Marabou only supports resize operator for very specific upsample case used in YOLO now.")
+            raise NotImplementedError(
+                "Marabou only supports resize operator for very specific upsample case used in YOLO now."
+            )
 
         # Get and check attributes
         coordinate_transformation_mode = None
@@ -992,7 +1060,10 @@ class ONNXParser:
 
         for attr in node.attribute:
             value = get_attribute_value(attr)
-            if attr.name == "coordinate_transformation_mode" and value.decode() == "asymmetric":
+            if (
+                attr.name == "coordinate_transformation_mode"
+                and value.decode() == "asymmetric"
+            ):
                 coordinate_transformation_mode = value
             elif attr.name == "cubic_coeff_a" and value == -0.75:
                 cubic_coeff_a = value
@@ -1008,17 +1079,28 @@ class ONNXParser:
                 #  nearest_mode: floor
                 # There are many cases other than the above case according to https://github.com/onnx/onnx/blob/main/docs/Operators.md#resize
                 # Please note that we should carefully expand this operation beyond this case.
-                raise NotImplementedError("Marabou only supports resize operator for very specific upsample case used in YOLO now.")
+                raise NotImplementedError(
+                    "Marabou only supports resize operator for very specific upsample case used in YOLO now."
+                )
 
         # Get scales
         scales = None
-        if len(node.input) == 3  and np.all(self.constantMap[node.input[2]] == [1., 1., 2., 2.]):
+        if len(node.input) == 3 and np.all(
+            self.constantMap[node.input[2]] == [1.0, 1.0, 2.0, 2.0]
+        ):
             scales = [1, 1, 2, 2]
         else:
-             raise NotImplementedError("Marabou only supports resize operator for very specific upsample case used in YOLO now.")
+            raise NotImplementedError(
+                "Marabou only supports resize operator for very specific upsample case used in YOLO now."
+            )
 
         # Set output shape
-        outputShape = (inputShape[0], inputShape[1], inputShape[2] * scales[2], inputShape[3] * scales[3])
+        outputShape = (
+            inputShape[0],
+            inputShape[1],
+            inputShape[2] * scales[2],
+            inputShape[3] * scales[3],
+        )
         self.shapeMap[nodeName] = outputShape
 
         if not makeEquations:
@@ -1046,7 +1128,6 @@ class ONNXParser:
         inputName1, inputName2 = node.input
         shape1 = self.shapeMap[inputName1]
         # shape2 = self.shapeMap[inputName2] # comment out since this is never used.
-
 
         # Get the broadcasted shape
         outShape = shape1
@@ -1091,7 +1172,8 @@ class ONNXParser:
             return
 
         # Decide which inputs are variables and which are constants
-        firstInputConstant = False; secondInputConstant = False
+        firstInputConstant = False
+        secondInputConstant = False
         if inputName1 in self.constantMap:
             firstInputConstant = True
             input1 = self.constantMap[inputName1]
@@ -1150,13 +1232,13 @@ class ONNXParser:
         # Adjust equations to incorporate the constant addition
         numEquationsChanged = 0
         for equ in self.query.equList:
-            (c,var) = equ.addendList[-1]
+            (c, var) = equ.addendList[-1]
             assert c == -1
             if var in varInput:
                 ind = np.where(var == varInput)[0][0]
 
                 # Adjust the equation
-                equ.setScalar(equ.scalar-constInput[ind])
+                equ.setScalar(equ.scalar - constInput[ind])
                 numEquationsChanged += 1
 
         # If we changed one equation for every input variable, then
@@ -1215,7 +1297,7 @@ class ONNXParser:
 
         alpha = 0.01
         for attr in node.attribute:
-            if attr.name == 'alpha':
+            if attr.name == "alpha":
                 alpha = get_attribute_value(attr)
 
         # Get variables
@@ -1307,14 +1389,22 @@ class ONNXParser:
         inputVars = self.varMap[inputName].reshape(-1)
         outputVars = self.makeNewVariables(nodeName).reshape(-1)
         assert len(inputVars) == len(outputVars)
-        firstAffine = np.array([self.query.getNewVariable() for i in range(outputVars.size)])
-        sigmoidOutput = np.array([self.query.getNewVariable() for i in range(outputVars.size)])
+        firstAffine = np.array(
+            [self.query.getNewVariable() for i in range(outputVars.size)]
+        )
+        sigmoidOutput = np.array(
+            [self.query.getNewVariable() for i in range(outputVars.size)]
+        )
 
         # Generate equations
         for i in range(len(inputVars)):  # tanh(x) = 2 * \sigmoid(2x) - 1
-            self.query.addEquality([inputVars[i], firstAffine[i]], [2.0, -1.0], 0.0, isProperty=False)
+            self.query.addEquality(
+                [inputVars[i], firstAffine[i]], [2.0, -1.0], 0.0, isProperty=False
+            )
             self.query.addSigmoid(firstAffine[i], sigmoidOutput[i])
-            self.query.addEquality([sigmoidOutput[i], outputVars[i]], [2.0, -1.0], 1.0, isProperty=False)
+            self.query.addEquality(
+                [sigmoidOutput[i], outputVars[i]], [2.0, -1.0], 1.0, isProperty=False
+            )
         for f in outputVars:
             self.query.setLowerBound(f, -1.0)
             self.query.setUpperBound(f, 1.0)
@@ -1331,6 +1421,7 @@ class ONNXParser:
             if nodeName not in self.varMap and nodeName not in self.constantMap:
                 self.shapeMap.pop(nodeName)
 
+
 def getBroadcastShape(shape1, shape2):
     """Helper function to get the shape that results from broadcasting these shapes together
 
@@ -1343,4 +1434,7 @@ def getBroadcastShape(shape1, shape2):
 
     :meta private:
     """
-    return [l1 if l1 == l2 else max(l1, l2) for l1, l2 in itertools.zip_longest(shape1[::-1], shape2[::-1], fillvalue=1)][::-1]
+    return [
+        l1 if l1 == l2 else max(l1, l2)
+        for l1, l2 in itertools.zip_longest(shape1[::-1], shape2[::-1], fillvalue=1)
+    ][::-1]

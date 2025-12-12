@@ -1,10 +1,10 @@
-'''
+"""
 Top contributors (to current version):
     - Christopher Lazarus
     - Shantanu Thakoor
     - Kyle Julian
     - Min Wu
-    
+
 This file is part of the Marabou project.
 Copyright (c) 2017-2024 by the authors listed in the file AUTHORS
 in the top-level source directory) and their institutional affiliations.
@@ -12,9 +12,10 @@ All rights reserved. See the file COPYING in the top-level source
 directory for licensing information.
 
 MarabouUtils contains supporting Maraboupy code that doesn't fit in other files
-'''
+"""
 
 from maraboupy import MarabouCore
+
 
 class Equation:
     """Python class to conveniently represent :class:`~maraboupy.MarabouCore.Equation`
@@ -24,9 +25,9 @@ class Equation:
         scalar (float): Scalar term for equation
         EquationType (:class:`~maraboupy.MarabouCore.EquationType`): Equation type (EQ, LE, GE)
     """
+
     def __init__(self, EquationType=MarabouCore.Equation.EQ):
-        """Construct empty equation
-        """
+        """Construct empty equation"""
         self.addendList = []
         self.scalar = None
         self.EquationType = EquationType
@@ -55,6 +56,8 @@ class Equation:
         :param equation: the other equation to be compared with.
         :return: True if these two equations are identical; False if not.
         """
-        return self.addendList == equation.addendList \
-               and self.scalar == equation.scalar \
-               and self.EquationType == equation.EquationType
+        return (
+            self.addendList == equation.addendList
+            and self.scalar == equation.scalar
+            and self.EquationType == equation.EquationType
+        )

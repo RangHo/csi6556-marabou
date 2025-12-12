@@ -1,5 +1,6 @@
 [tools]
 cmake = "3.30"
+"pipx:black" = "latest"
 python = "3.11"
 
 [env]

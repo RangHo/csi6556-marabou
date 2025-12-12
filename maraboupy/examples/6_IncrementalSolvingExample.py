@@ -1,4 +1,4 @@
-'''
+"""
 Incremental solving Example
 ====================
 
@@ -10,13 +10,13 @@ Copyright (c) 2017-2024 by the authors listed in the file AUTHORS
 in the top-level source directory) and their institutional affiliations.
 All rights reserved. See the file COPYING in the top-level source
 directory for licensing information.
-'''
-
+"""
 
 # Supress warnings caused by tensorflow
 import warnings
-warnings.filterwarnings('ignore', category = DeprecationWarning)
-warnings.filterwarnings('ignore', category = PendingDeprecationWarning)
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 
 from maraboupy import Marabou
 from maraboupy import MarabouCore
@@ -31,10 +31,10 @@ after invoking the solve() method.
 """
 
 # Global settings
-ONNX_FILE = "../../resources/onnx/mnist2x10.onnx" # tiny mnist classifier
+ONNX_FILE = "../../resources/onnx/mnist2x10.onnx"  # tiny mnist classifier
 EPSILON = 0.02
 NUM_SAMPLES = 5
-OPT = Marabou.createOptions(timeoutInSeconds=10,verbosity=0)
+OPT = Marabou.createOptions(timeoutInSeconds=10, verbosity=0)
 SEED = 50
 
 np.random.seed(SEED)
@@ -42,7 +42,7 @@ np.random.seed(SEED)
 filename = os.path.join(os.path.dirname(__file__), ONNX_FILE)
 
 # The set of images to check local robustness against
-random_images = [np.random.random((784,1)) for _ in range(NUM_SAMPLES)]
+random_images = [np.random.random((784, 1)) for _ in range(NUM_SAMPLES)]
 
 # Step 1: load the network
 network = Marabou.read_onnx(filename)
@@ -62,18 +62,18 @@ for idx, img in enumerate(random_images):
             network.setLowerBound(x, max(0, img[i] - EPSILON))
             network.setUpperBound(x, min(1, img[i] + EPSILON))
         # y_correct - y_i <= 0
-        network.addInequality([outputVars[correctLabel],
-                               outputVars[y_idx]],
-                              [1, -1], 0, isProperty=True)
+        network.addInequality(
+            [outputVars[correctLabel], outputVars[y_idx]], [1, -1], 0, isProperty=True
+        )
         # Step 3.3: check whether it is possible that y_correct is less than
         # y_i.
         res, _, _ = network.solve(verbose=False, options=OPT)
-        if res == 'sat':
+        if res == "sat":
             # It is possible that y_correct <= y_i.
             print(f"not locally robust at image {idx}")
             robust = False
             break
-        elif res == 'unsat':
+        elif res == "unsat":
             # It is not possible that y_correct <= y_i.
             continue
         else:

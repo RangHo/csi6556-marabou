@@ -26,6 +26,7 @@ class cmake_build_ext(build_ext):
         args = [
             f"cmake",
             f"-DCMAKE_BUILD_TYPE=Release",
+            f"-DCMAKE_CXX_STANDARD=11",
             f"-DBUILD_PYTHON=ON",
             f"-DPYTHON_EXECUTABLE={sys.executable}",
             f"-DPYTHON_LIBRARY_OUTPUT_DIRECTORY={build_temp}",

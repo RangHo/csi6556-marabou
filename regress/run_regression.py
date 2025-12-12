@@ -5,7 +5,7 @@ import sys
 import threading
 
 DEFAULT_TIMEOUT = 600
-EXPECTED_RESULT_OPTIONS = ('sat', 'unsat')
+EXPECTED_RESULT_OPTIONS = ("sat", "unsat")
 
 
 def run_process(args, cwd, timeout, s_input=None):
@@ -19,10 +19,11 @@ def run_process(args, cwd, timeout, s_input=None):
         cwd=cwd,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
+        stderr=subprocess.PIPE,
+    )
 
-    out = ''
-    err = ''
+    out = ""
+    err = ""
     exit_status = 124
     try:
         if timeout:
@@ -42,15 +43,15 @@ def run_process(args, cwd, timeout, s_input=None):
 
 
 def analyze_process_result(out, err, exit_status, expected_result):
-    if exit_status != 0 or err != '':
+    if exit_status != 0 or err != "":
         if exit_status != 0:
             print("exit status: {}".format(exit_status))
-        if err != '':
+        if err != "":
             print("err: {}".format(err))
         return False
 
     # If the output is unsat there is no \n after the unsat statement
-    if expected_result == 'unsat':
+    if expected_result == "unsat":
         out_lines = out.splitlines()
         if out_lines[-1] == expected_result:
             return True
@@ -58,15 +59,25 @@ def analyze_process_result(out, err, exit_status, expected_result):
             print("Expected unsat, but last line is in output is: ", out_lines[-1])
             return False
     else:
-        if '\nsat' in out:
+        if "\nsat" in out:
             return True
         else:
-            print('expected sat, but \'\\nSAT\' is not in the output. tail of the output:\n', out[-1500:])
+            print(
+                "expected sat, but '\\nSAT' is not in the output. tail of the output:\n",
+                out[-1500:],
+            )
             return False
 
 
-def run_marabou(marabou_binary, network_path, property_path, expected_result, timeout=DEFAULT_TIMEOUT, arguments=None):
-    '''
+def run_marabou(
+    marabou_binary,
+    network_path,
+    property_path,
+    expected_result,
+    timeout=DEFAULT_TIMEOUT,
+    arguments=None,
+):
+    """
     Run marabou and assert the result is according to the expected_result
     :param marabou_binary: path to marabou executable
     :param network_path: path to nnet file to pass too marabou
@@ -74,15 +85,14 @@ def run_marabou(marabou_binary, network_path, property_path, expected_result, ti
     :param expected_result: sat / unsat
     :param arguments list of arguments to pass to Marabou (for example DnC mode)
     :return: True / False if test pass or not
-    '''
+    """
     if not os.access(marabou_binary, os.X_OK):
-        sys.exit(
-            '"{}" does not exist or is not executable'.format(marabou_binary))
+        sys.exit('"{}" does not exist or is not executable'.format(marabou_binary))
     if not os.path.isfile(network_path):
         sys.exit('"{}" does not exist or is not a file'.format(network_path))
     if not os.path.isfile(property_path):
         sys.exit('"{}" does not exist or is not a file'.format(property_path))
-    if expected_result not in {'sat', 'unsat'}:
+    if expected_result not in {"sat", "unsat"}:
         sys.exit('"{}" is not a marabou supported result'.format(expected_result))
 
     args = [marabou_binary, network_path, property_path]
@@ -95,7 +105,7 @@ def run_marabou(marabou_binary, network_path, property_path, expected_result, ti
 
 
 def run_mpsparser(mps_binary, network_path, expected_result, arguments=None):
-    '''
+    """
     Run marabou and assert the result is according to the expected_result
     :param marabou_binary: path to marabou executable
     :param network_path: path to nnet file to pass too marabou
@@ -103,13 +113,12 @@ def run_mpsparser(mps_binary, network_path, expected_result, arguments=None):
     :param expected_result: sat / unsat
     :param arguments list of arguments to pass to Marabou (for example DnC mode)
     :return: True / False if test pass or not
-    '''
+    """
     if not os.access(mps_binary, os.X_OK):
-        sys.exit(
-            '"{}" does not exist or is not executable'.format(mps_binary))
+        sys.exit('"{}" does not exist or is not executable'.format(mps_binary))
     if not os.path.isfile(network_path):
         sys.exit('"{}" does not exist or is not a file'.format(network_path))
-    if expected_result not in {'sat', 'unsat'}:
+    if expected_result not in {"sat", "unsat"}:
         sys.exit('"{}" is not a marabou supported result'.format(expected_result))
 
     args = [mps_binary, network_path]
@@ -119,8 +128,15 @@ def run_mpsparser(mps_binary, network_path, expected_result, arguments=None):
 
     return analyze_process_result(out, err, exit_status, expected_result)
 
-def run_input_query(marabou_binary, input_query_path, expected_result, timeout=DEFAULT_TIMEOUT, arguments=None):
-    '''
+
+def run_input_query(
+    marabou_binary,
+    input_query_path,
+    expected_result,
+    timeout=DEFAULT_TIMEOUT,
+    arguments=None,
+):
+    """
     Run marabou and assert the result is according to the expected_result
     :param marabou_binary: path to marabou executable
     :param network_path: path to nnet file to pass too marabou
@@ -128,13 +144,12 @@ def run_input_query(marabou_binary, input_query_path, expected_result, timeout=D
     :param expected_result: sat / unsat
     :param arguments list of arguments to pass to Marabou (for example DnC mode)
     :return: True / False if test pass or not
-    '''
+    """
     if not os.access(marabou_binary, os.X_OK):
-        sys.exit(
-            '"{}" does not exist or is not executable'.format(marabou_binary))
+        sys.exit('"{}" does not exist or is not executable'.format(marabou_binary))
     if not os.path.isfile(input_query_path):
         sys.exit('"{}" does not exist or is not a file'.format(input_query_path))
-    if expected_result not in {'sat', 'unsat'}:
+    if expected_result not in {"sat", "unsat"}:
         sys.exit('"{}" is not a marabou supported result'.format(expected_result))
 
     args = [marabou_binary, "--input-query", input_query_path]
@@ -145,16 +160,17 @@ def run_input_query(marabou_binary, input_query_path, expected_result, timeout=D
 
     return analyze_process_result(out, err, exit_status, expected_result)
 
+
 def main():
     parser = argparse.ArgumentParser(
-        description=
-        'Runs benchmark and checks for correct exit status and output. supports nnet and mps file format')
+        description="Runs benchmark and checks for correct exit status and output. supports nnet and mps file format"
+    )
 
-    parser.add_argument('marabou_binary')
-    parser.add_argument('network_file')
-    parser.add_argument('property_file', nargs='?', default='')
-    parser.add_argument('expected_result', choices=EXPECTED_RESULT_OPTIONS)
-    parser.add_argument('--timeout', nargs='?', const=DEFAULT_TIMEOUT, type=int)
+    parser.add_argument("marabou_binary")
+    parser.add_argument("network_file")
+    parser.add_argument("property_file", nargs="?", default="")
+    parser.add_argument("expected_result", choices=EXPECTED_RESULT_OPTIONS)
+    parser.add_argument("--timeout", nargs="?", const=DEFAULT_TIMEOUT, type=int)
 
     args, unknown = parser.parse_known_args()
 
@@ -164,16 +180,26 @@ def main():
     expected_result = args.expected_result
 
     marabou_args = unknown
-    if network_file_extension in ['.nnet', '.onnx']:
+    if network_file_extension in [".nnet", ".onnx"]:
         property_file = os.path.abspath(args.property_file)
-        return run_marabou(binary, network_file, property_file, expected_result, args.timeout, marabou_args)
-    elif network_file_extension == '.mps':
+        return run_marabou(
+            binary,
+            network_file,
+            property_file,
+            expected_result,
+            args.timeout,
+            marabou_args,
+        )
+    elif network_file_extension == ".mps":
         return run_mpsparser(binary, network_file, expected_result, marabou_args)
-    if network_file_extension == '.ipq':
-        return run_input_query(binary, network_file, expected_result, args.timeout, marabou_args)
+    if network_file_extension == ".ipq":
+        return run_input_query(
+            binary, network_file, expected_result, args.timeout, marabou_args
+        )
     else:
         message = 'invalid extension "{}", supporting only nnet, onnx, ipq, and mps file format'
         raise NotImplementedError(message.format(network_file_extension))
+
 
 if __name__ == "__main__":
     if main():

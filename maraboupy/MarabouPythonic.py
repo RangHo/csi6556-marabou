@@ -34,6 +34,7 @@ class VarAffine:
         varCoeffs: neurons (int) and their coefficients (float), e.g., {x, a} denotes a * x.
         const: constant of the affine transformation, e.g., b.
     """
+
     varCoeffs: DefaultDict[int, float]
     scalar: float
 
@@ -45,7 +46,11 @@ class VarAffine:
         :param other: the addend could be a constant (float, int) or an affine transformation.
         :return: the result of addition is an affine transformation of neuron(s).
         """
-        assert isinstance(other, float) or isinstance(other, int) or isinstance(other, VarAffine)
+        assert (
+            isinstance(other, float)
+            or isinstance(other, int)
+            or isinstance(other, VarAffine)
+        )
         if isinstance(other, float) or isinstance(other, int):
             return VarAffine(self.varCoeffs, self.scalar + other)
         elif isinstance(other, VarAffine):
@@ -64,7 +69,11 @@ class VarAffine:
         :param other: the subtrahend could be a constant (float, int) or an affine transformation.
         :return: the result of subtraction is an affine transformation of neuron(s).
         """
-        assert isinstance(other, float) or isinstance(other, int) or isinstance(other, VarAffine)
+        assert (
+            isinstance(other, float)
+            or isinstance(other, int)
+            or isinstance(other, VarAffine)
+        )
         if isinstance(other, float) or isinstance(other, int):
             return VarAffine(self.varCoeffs, self.scalar - other)
         elif isinstance(other, VarAffine):
@@ -84,7 +93,11 @@ class VarAffine:
         :param other: the addend could be a constant (float, int) or an affine transformation.
         :return: the result of reverse addition is an affine transformation of neuron(s).
         """
-        assert isinstance(other, float) or isinstance(other, int) or isinstance(other, VarAffine)
+        assert (
+            isinstance(other, float)
+            or isinstance(other, int)
+            or isinstance(other, VarAffine)
+        )
         if isinstance(other, float) or isinstance(other, int):
             return VarAffine(self.varCoeffs, self.scalar + other)
         elif isinstance(other, VarAffine):
@@ -99,9 +112,13 @@ class VarAffine:
         :param other: the minuend could be a constant (float, int) or an affine transformation.
         :return: the result of reverse subtraction is an affine transformation of neuron(s).
         """
-        assert isinstance(other, float) or isinstance(other, int) or isinstance(other, VarAffine)
+        assert (
+            isinstance(other, float)
+            or isinstance(other, int)
+            or isinstance(other, VarAffine)
+        )
         if isinstance(other, float) or isinstance(other, int):
-            return - self + other
+            return -self + other
         elif isinstance(other, VarAffine):
             raise NotImplementedError
 
@@ -113,7 +130,11 @@ class VarAffine:
         :param other: the multiplier could only be a constant.
         :return: the result of multiplication is an affine transformation of neuron(s).
         """
-        assert isinstance(other, float) or isinstance(other, int) or isinstance(other, VarAffine)
+        assert (
+            isinstance(other, float)
+            or isinstance(other, int)
+            or isinstance(other, VarAffine)
+        )
         if isinstance(other, float) or isinstance(other, int):
             varCoeffs = defaultdict(float)
             for variable in self.varCoeffs:
@@ -154,15 +175,21 @@ class VarAffine:
         :param other: the right operand could be a constant (float, int) or an affine transformation.
         :return: an instance of the VarConstraint class.
         """
-        assert isinstance(other, float) or isinstance(other, int) or isinstance(other, VarAffine)
-        if list(self.varCoeffs.values()) == [1] and (isinstance(other, float) or isinstance(other, int)):
-            return VarConstraint(self, isEquality=False,
-                                 lowerBound=None,
-                                 upperBound=other - self.scalar)
+        assert (
+            isinstance(other, float)
+            or isinstance(other, int)
+            or isinstance(other, VarAffine)
+        )
+        if list(self.varCoeffs.values()) == [1] and (
+            isinstance(other, float) or isinstance(other, int)
+        ):
+            return VarConstraint(
+                self, isEquality=False, lowerBound=None, upperBound=other - self.scalar
+            )
         else:
-            return VarConstraint(self - other, isEquality=False,
-                                 lowerBound=None,
-                                 upperBound=None)
+            return VarConstraint(
+                self - other, isEquality=False, lowerBound=None, upperBound=None
+            )
 
     def __ge__(self, other):
         """
@@ -174,15 +201,21 @@ class VarAffine:
         :param other: the right operand could be a constant (float, int) or an affine transformation.
         :return: an instance of the VarConstraint class.
         """
-        assert isinstance(other, float) or isinstance(other, int) or isinstance(other, VarAffine)
-        if list(self.varCoeffs.values()) == [1] and (isinstance(other, float) or isinstance(other, int)):
-            return VarConstraint(self, isEquality=False,
-                                 lowerBound=other - self.scalar,
-                                 upperBound=None)
+        assert (
+            isinstance(other, float)
+            or isinstance(other, int)
+            or isinstance(other, VarAffine)
+        )
+        if list(self.varCoeffs.values()) == [1] and (
+            isinstance(other, float) or isinstance(other, int)
+        ):
+            return VarConstraint(
+                self, isEquality=False, lowerBound=other - self.scalar, upperBound=None
+            )
         else:
-            return VarConstraint(other - self, isEquality=False,
-                                 lowerBound=None,
-                                 upperBound=None)
+            return VarConstraint(
+                other - self, isEquality=False, lowerBound=None, upperBound=None
+            )
 
     def __eq__(self, other):
         """
@@ -193,9 +226,9 @@ class VarAffine:
         :param other: the right operand could be a constant (float, int) or an affine transformation.
         :return: an instance of the VarConstraint class.
         """
-        return VarConstraint(self - other, isEquality=True,
-                             lowerBound=None,
-                             upperBound=None)
+        return VarConstraint(
+            self - other, isEquality=True, lowerBound=None, upperBound=None
+        )
 
 
 @dataclass()
@@ -211,6 +244,7 @@ class VarConstraint:
         lowerBound: whether it is a lower bound, e.g., True if x + b >= b'.
         upperBound: whether it is an upper bound, e.g., True if x + b <= b'.
     """
+
     combination: VarAffine
     isEquality: bool
     lowerBound: Optional[float]

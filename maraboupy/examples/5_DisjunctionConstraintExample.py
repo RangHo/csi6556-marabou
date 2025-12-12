@@ -1,4 +1,4 @@
-'''
+"""
 Disjunction Constraint Example
 ====================
 
@@ -10,7 +10,7 @@ Copyright (c) 2017-2024 by the authors listed in the file AUTHORS
 in the top-level source directory) and their institutional affiliations.
 All rights reserved. See the file COPYING in the top-level source
 directory for licensing information.
-'''
+"""
 
 import sys
 import numpy as np
@@ -68,4 +68,4 @@ stats1.getTotalTimeInMicro()
 #
 # Test that the satisfying assignment found is a real one.
 for i in range(784):
-    assert(abs(vals1[i] - 1) < 0.0000001 or abs(vals1[i]) < 0.0000001)
+    assert abs(vals1[i] - 1) < 0.0000001 or abs(vals1[i]) < 0.0000001

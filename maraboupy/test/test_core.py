@@ -21,6 +21,7 @@ def test_main():
     exitCode = MarabouCore.maraboupyMain(["Marabou", "--version"])
     assert exitCode == 0
 
+
 def test_solve_round_and_clip_unsat():
     """
     -1 <= x0 <= 2
@@ -48,7 +49,6 @@ def test_solve_round_and_clip_unsat():
     equation.setScalar(0)
     ipq.addEquation(equation)
 
-
     MarabouCore.addClipConstraint(ipq, 2, 3, 0.5, 1.5)
     MarabouCore.addRoundConstraint(ipq, 3, 4)
 
@@ -56,7 +56,7 @@ def test_solve_round_and_clip_unsat():
 
     # should be unsatisfiable
     exitCode, vals, stats = MarabouCore.solve(ipq, OPT)
-    assert(exitCode == "unsat")
+    assert exitCode == "unsat"
 
 
 def test_solve_round_and_clip_sat():
@@ -86,7 +86,6 @@ def test_solve_round_and_clip_sat():
     equation.setScalar(0)
     ipq.addEquation(equation)
 
-
     MarabouCore.addClipConstraint(ipq, 2, 3, 0.5, 1.5)
     MarabouCore.addRoundConstraint(ipq, 3, 4)
 
@@ -96,9 +95,10 @@ def test_solve_round_and_clip_sat():
     exitCode, vals, stats = MarabouCore.solve(ipq, OPT)
 
     # should be satisfiable
-    assert(exitCode == "sat")
-    assert(are_equal(vals[3], 0.5))
-    assert(are_equal(vals[4], 0))
+    assert exitCode == "sat"
+    assert are_equal(vals[3], 0.5)
+    assert are_equal(vals[4], 0)
+
 
 def test_solve_partial_arguments():
     """
@@ -141,6 +141,7 @@ def test_dump_query():
         assert vals[var] <= ipq.getUpperBound(var)
     assert exitCode == "sat"
 
+
 def define_ipq(property_bound):
     """
     This function defines a simple input query directly through MarabouCore
@@ -180,6 +181,7 @@ def define_ipq(property_bound):
     property_eq.setScalar(property_bound)
     ipq.addEquation(property_eq)
     return ipq
+
 
 def are_equal(v1, v2):
     """

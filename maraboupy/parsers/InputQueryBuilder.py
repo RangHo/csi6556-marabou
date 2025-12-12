@@ -1,4 +1,4 @@
-'''
+"""
 Top contributors (to current version):
     - Christopher Lazarus
     - Shantanu Thakoor
@@ -12,18 +12,20 @@ Copyright (c) 2017-2024 by the authors listed in the file AUTHORS
 in the top-level source directory) and their institutional affiliations.
 All rights reserved. See the file COPYING in the top-level source
 directory for licensing information.
-'''
+"""
 
 from maraboupy import MarabouCore
 from maraboupy import MarabouUtils
 from maraboupy.MarabouPythonic import *
 from abc import ABC
 
+
 class InputQueryBuilder(ABC):
     """
     Abstract class for building up an input query.
     Should eventually be implemented by a renamed `NetworkParser.cpp` on the C++ side.
     """
+
     def __init__(self):
         """
         Constructs a MarabouNetwork object and calls function to initialize
@@ -31,11 +33,10 @@ class InputQueryBuilder(ABC):
         self.clear()
 
     def clear(self):
-        """Reset values to represent empty network
-        """
+        """Reset values to represent empty network"""
         self.numVars = 0
         self.equList = []
-        self.additionalEquList = [] # used to store user defined equations
+        self.additionalEquList = []  # used to store user defined equations
         self.reluList = []
         self.leakyReluList = []
         self.sigmoidList = []
@@ -51,8 +52,7 @@ class InputQueryBuilder(ABC):
         self.outputVars = []
 
     def clearProperty(self):
-        """Clear the lower bounds and upper bounds map, and the self.additionEquList
-        """
+        """Clear the lower bounds and upper bounds map, and the self.additionEquList"""
         self.lowerBounds.clear()
         self.upperBounds.clear()
         self.additionalEquList.clear()
@@ -87,7 +87,7 @@ class InputQueryBuilder(ABC):
             x (int): Variable number to set
             v (float): Value representing lower bound
         """
-        self.lowerBounds[x]=v
+        self.lowerBounds[x] = v
 
     def setUpperBound(self, x, v):
         """Function to set upper bound for variable
@@ -96,7 +96,7 @@ class InputQueryBuilder(ABC):
             x (int): Variable number to set
             v (float): Value representing upper bound
         """
-        self.upperBounds[x]=v
+        self.upperBounds[x] = v
 
     def addRelu(self, v1, v2):
         """Function to add a new Relu constraint
@@ -207,7 +207,7 @@ class InputQueryBuilder(ABC):
             scalar (float): Right hand side constant of equation
             isProperty (bool): If true, this constraint can be removed later by clearProperty() method
         """
-        assert len(vars)==len(coeffs)
+        assert len(vars) == len(coeffs)
         e = MarabouUtils.Equation()
         for i in range(len(vars)):
             e.addAddend(coeffs[i], vars[i])
@@ -226,7 +226,7 @@ class InputQueryBuilder(ABC):
             scalar (float): Right hand side constant of inequality
             isProperty (bool): If true, this constraint can be removed later by clearProperty() method
         """
-        assert len(vars)==len(coeffs)
+        assert len(vars) == len(coeffs)
         e = MarabouUtils.Equation(MarabouCore.Equation.LE)
         for i in range(len(vars)):
             e.addAddend(coeffs[i], vars[i])
@@ -248,9 +248,9 @@ class InputQueryBuilder(ABC):
             self.setUpperBound(vars[0], constraint.upperBound)
         else:
             if constraint.isEquality:
-                self.addEquality(vars, coeffs, - constraint.combination.scalar)
+                self.addEquality(vars, coeffs, -constraint.combination.scalar)
             else:
-                self.addInequality(vars, coeffs, - constraint.combination.scalar)
+                self.addInequality(vars, coeffs, -constraint.combination.scalar)
 
     def getInputQuery(self):
         """Constructs the `InputQuery` object from the current set of constraints.
@@ -265,17 +265,17 @@ class InputQueryBuilder(ABC):
         for inputVarArray in self.inputVars:
             for inputVar in inputVarArray.flatten():
                 ipq.markInputVariable(inputVar, i)
-                i+=1
+                i += 1
 
         i = 0
         for outputVarArray in self.outputVars:
             for outputVar in outputVarArray.flatten():
                 ipq.markOutputVariable(outputVar, i)
-                i+=1
+                i += 1
 
         for e in self.equList:
             eq = MarabouCore.Equation(e.EquationType)
-            for (c, v) in e.addendList:
+            for c, v in e.addendList:
                 assert v < self.numVars
                 eq.addAddend(c, v)
             eq.setScalar(e.scalar)
@@ -283,7 +283,7 @@ class InputQueryBuilder(ABC):
 
         for e in self.additionalEquList:
             eq = MarabouCore.Equation(e.EquationType)
-            for (c, v) in e.addendList:
+            for c, v in e.addendList:
                 assert v < self.numVars
                 eq.addAddend(c, v)
             eq.setScalar(e.scalar)
@@ -295,7 +295,7 @@ class InputQueryBuilder(ABC):
 
         for r in self.leakyReluList:
             assert r[1] < self.numVars and r[0] < self.numVars
-            assert(r[2] > 0 and r[2] < 1)
+            assert r[2] > 0 and r[2] < 1
             MarabouCore.addLeakyReluConstraint(ipq, r[0], r[1], r[2])
 
         for r in self.bilinearList:
@@ -331,7 +331,7 @@ class InputQueryBuilder(ABC):
                 converted_disjunct = []
                 for e in disjunct:
                     eq = MarabouCore.Equation(e.EquationType)
-                    for (c, v) in e.addendList:
+                    for c, v in e.addendList:
                         assert v < self.numVars
                         eq.addAddend(c, v)
                     eq.setScalar(e.scalar)
@@ -366,15 +366,17 @@ class InputQueryBuilder(ABC):
         :return: True if these two networks and all their attributes are identical; False if not.
         """
         equivalence = True
-        if self.numVars != network.numVars \
-                or self.reluList != network.reluList \
-                or self.sigmoidList != network.sigmoidList \
-                or self.maxList != network.maxList \
-                or self.absList != network.absList \
-                or self.signList != network.signList \
-                or self.disjunctionList != network.disjunctionList \
-                or self.lowerBounds != network.lowerBounds \
-                or self.upperBounds != network.upperBounds:
+        if (
+            self.numVars != network.numVars
+            or self.reluList != network.reluList
+            or self.sigmoidList != network.sigmoidList
+            or self.maxList != network.maxList
+            or self.absList != network.absList
+            or self.signList != network.signList
+            or self.disjunctionList != network.disjunctionList
+            or self.lowerBounds != network.lowerBounds
+            or self.upperBounds != network.upperBounds
+        ):
             equivalence = False
         for equation1, equation2 in zip(self.equList, network.equList):
             if not equation1.isEqualTo(equation2):
